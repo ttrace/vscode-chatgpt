@@ -1,13 +1,13 @@
 {
   "name": "vscode-chatgpt",
-  "publisher": "YOUR_PUBLISHER_NAME",
+  "publisher": "TaiyoFujii",
   "displayName": "vscode-chatgpt",
   "icon": "images/ai-logo.jpg",
   "description": "vscode-chatgpt",
-  "version": "3.9.7-0",
+  "version": "3.9.7-ja",
   "aiKey": "",
   "repository": {
-    "url": "https://github.com/YOUR_PUBLISHER_NAME/vscode-chatgpt"
+    "url": "https://github.com/ttrace/vscode-chatgpt"
   },
   "engines": {
     "vscode": "^1.73.0"
@@ -158,69 +158,69 @@
     "commands": [
       {
         "command": "vscode-chatgpt.freeText",
-        "title": "ChatGPT: Ask anything"
+        "title": "ChatGPT: 何でもたずねてください"
       },
       {
         "command": "vscode-chatgpt.clearSession",
-        "title": "ChatGPT: Reset session"
+        "title": "ChatGPT: セッションを再起動"
       },
       {
         "command": "vscode-chatgpt.generateCode",
-        "title": "ChatGPT-Codex: Generate code",
+        "title": "ChatGPT-Codex: コードの生成",
         "enablement": "editorHasSelection"
       },
       {
         "command": "vscode-chatgpt.addTests",
-        "title": "ChatGPT: Add tests",
+        "title": "ChatGPT: テスト追加",
         "enablement": "editorHasSelection"
       },
       {
         "command": "vscode-chatgpt.findProblems",
-        "title": "ChatGPT: Find bugs",
+        "title": "ChatGPT: バグ捜索",
         "enablement": "editorHasSelection"
       },
       {
         "command": "vscode-chatgpt.optimize",
-        "title": "ChatGPT: Optimize",
+        "title": "ChatGPT: 最適化",
         "enablement": "editorHasSelection"
       },
       {
         "command": "vscode-chatgpt.explain",
-        "title": "ChatGPT: Explain",
+        "title": "ChatGPT: コードの説明",
         "enablement": "editorHasSelection"
       },
       {
         "command": "vscode-chatgpt.addComments",
-        "title": "ChatGPT: Add comments",
+        "title": "ChatGPT: コメント追加",
         "enablement": "editorHasSelection"
       },
       {
         "command": "vscode-chatgpt.completeCode",
-        "title": "ChatGPT: Complete code",
+        "title": "ChatGPT: コードを完成させる",
         "enablement": "editorHasSelection"
       },
       {
         "command": "vscode-chatgpt.adhoc",
-        "title": "ChatGPT: Ad-hoc prompt",
+        "title": "ChatGPT: 一時的なプロンプト",
         "enablement": "editorHasSelection"
       },
       {
         "command": "vscode-chatgpt.customPrompt1",
-        "title": "ChatGPT: Custom prompt 1",
+        "title": "ChatGPT: カスタムプロンプト 1",
         "enablement": "editorHasSelection"
       },
       {
         "command": "vscode-chatgpt.customPrompt2",
-        "title": "ChatGPT: Custom prompt 2",
+        "title": "ChatGPT: カスタムプロンプト 2",
         "enablement": "editorHasSelection"
       },
       {
         "command": "vscode-chatgpt.clearConversation",
-        "title": "ChatGPT: Clear conversation"
+        "title": "ChatGPT: 会話を消去"
       },
       {
         "command": "vscode-chatgpt.exportConversation",
-        "title": "ChatGPT: Export conversation"
+        "title": "ChatGPT: 会話を書き出す"
       }
     ],
     "viewsContainers": {
@@ -313,7 +313,7 @@
         },
         "chatgpt.promptPrefix.findProblems": {
           "type": "string",
-          "default": "Find problems with the following code",
+          "default": "以下のコードの問題点を探してください:",
           "description": "The prompt prefix used for finding problems for the selected code",
           "order": 10
         },
@@ -325,7 +325,7 @@
         },
         "chatgpt.promptPrefix.optimize": {
           "type": "string",
-          "default": "Optimize the following code",
+          "default": "以下のコードを最適化してください\n:",
           "description": "The prompt prefix used for optimizing the selected code",
           "order": 12
         },
@@ -337,7 +337,7 @@
         },
         "chatgpt.promptPrefix.explain": {
           "type": "string",
-          "default": "Explain the following code",
+          "default": "以下のコードを説明してください\n:",
           "description": "The prompt prefix used for explaining the selected code",
           "order": 14
         },
