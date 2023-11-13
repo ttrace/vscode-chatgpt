@@ -5,3 +5,5 @@ node_modules
 *.vsix
 !node_modules/chatgpt/build/index.js
 .DS_Store
+package-lock.json
+memo.md
