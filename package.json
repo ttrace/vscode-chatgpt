@@ -421,9 +421,8 @@
         "chatgpt.gpt3.model": {
           "type": "string",
           "enum": [
-            "gpt-4-1106-preview",
             "gpt-4",
-            "gpt-4-32k",
+            "gpt-4-turbo-preview",
             "gpt-3.5-turbo",
             "gpt-3.5-turbo-16k",
             "text-davinci-003",
@@ -437,9 +436,8 @@
           "markdownDescription": "OpenAI models to use for your prompts. [Documentation](https://beta.openai.com/docs/models/models). \n\n**If you face 400 Bad Request please make sure you are using the right model for your integration method.**",
           "order": 33,
           "enumItemLabels": [
-            "OpenAI API Key - gpt-4-1106-preview",
             "OpenAI API Key - gpt-4",
-            "OpenAI API Key - gpt-4-32k",
+            "OpenAI API Key - gpt-4-turbo-preview",
             "OpenAI API Key - gpt-3.5-turbo",
             "OpenAI API Key - gpt-3.5-turbo-16k",
             "OpenAI API Key - text-davinci-003",
@@ -450,8 +448,9 @@
             "OpenAI API Key - code-cushman-001"
           ],
           "markdownEnumDescriptions": [
-            "More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat. Will be updated with our latest model iteration 2 weeks after it is released.",
             "Same capabilities as the base gpt-4 mode but with 4x the context length. Will be updated with our latest model iteration.",
+            "The latest GPT-4 model intended to reduce cases of “laziness” where the model doesn’t complete a task. Returns a maximum of 4,096 output tokens.",
+            "More capable than any GPT-3.5 model, able to do more complex tasks, and optimized for chat. Will be updated with our latest model iteration 2 weeks after it is released.",
             "ChatGPT Plus subscription default model that's used in chat.openai.com. This requires a subscription on OpenAI side, please make sure you are eligible to use this model. \n\n**Optimized for speed, currently available to Plus users**",
             "ChatGPT Plus subscription legacy model that's used in chat.openai.com. This requires a subscription on OpenAI side, please make sure you are eligible to use this model. \n\n**The previous ChatGPT Plus model**",
             "ChatGPT Plus experimental model that's used in chat.openai.com. This requires a subscription on OpenAI side, please make sure you are eligible to use this model. \n\n**Optimized for speed, currently available to Plus users**",
