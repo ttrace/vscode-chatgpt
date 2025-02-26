@@ -1,5 +1,4 @@
 import delay from 'delay';
-import fetch from 'isomorphic-fetch';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
 import OpenAI from 'openai'; // 最新のChatGPTAPIをインポート
@@ -18,7 +17,7 @@ export default class ChatGptViewProvider implements vscode.WebviewViewProvider {
 	public chromiumPath?: string;
 	public profilePath?: string;
 	public model: string;
-	public conversationHistory: Array<{ role: "user" | "system" | "assistant", content: string; name? : string}> = [];
+	public conversationHistory: Array<{ role: "user" | "system" | "assistant", content: string; name?: string; }> = [];
 	private apiGpt?: OpenAI;
 	private apiGpt3?: ChatGPTAPI3;
 	private apiGpt35?: ChatGPTAPI35;
@@ -219,7 +218,7 @@ export default class ChatGptViewProvider implements vscode.WebviewViewProvider {
 
 		const state = this.context.globalState;
 		const configuration = vscode.workspace.getConfiguration("chatgpt");
-		this.conversationHistory.push({ role: 'system', content: this.systemContext});
+		this.conversationHistory.push({ role: 'system', content: this.systemContext });
 
 		if (this.useGpt3) {
 			if ((this.isGpt35Model && !this.apiGpt35) || (!this.isGpt35Model && !this.apiGpt3) || modelChanged) {
@@ -271,7 +270,7 @@ export default class ChatGptViewProvider implements vscode.WebviewViewProvider {
 				// 			top_p,
 				// 		}
 				// 	});
-					
+
 				// } else {
 				// 	this.apiGpt3 = new ChatGPTAPI3({
 				// 		apiKey,
@@ -343,12 +342,15 @@ export default class ChatGptViewProvider implements vscode.WebviewViewProvider {
 
 		this.sendMessage({ type: 'addQuestion', value: prompt, code: options.code, autoScroll: this.autoScroll });
 
+
 		try {
 			const gpt3Response = await this.apiGpt?.chat.completions.create({
-				model: this.model,
+				model: this.conversationHistory.length < 3 ? "o3-mini" : "gpt-4o",
 				messages: this.conversationHistory,
 				stream: true, // ストリーム応答を有効にする場合
 			});
+			// console.log(this.conversationHistory.length < 3 ? "o3-mini" : "gpt-4o",);
+
 			if (gpt3Response) {
 				for await (const message of gpt3Response) {
 					this.response += message.choices[0].delta.content || '';
@@ -359,6 +361,13 @@ export default class ChatGptViewProvider implements vscode.WebviewViewProvider {
 			if (options.previousAnswer != null) {
 				this.response = options.previousAnswer + this.response;
 			}
+
+			// conversationHistoryへGPTの返答を組み込む（追記例）
+			this.conversationHistory.push({
+				role: 'assistant',
+				content: this.response
+			});
+			console.log(this.conversationHistory);
 
 			const hasContinuation = ((this.response.split("```").length) % 2) === 0;
 
