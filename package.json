@@ -4,7 +4,7 @@
   "displayName": "vscode-chatgpt",
   "icon": "images/ai-logo.jpg",
   "description": "vscode-chatgpt",
-  "version": "4.1.7-ja",
+  "version": "4.1.8-ja",
   "aiKey": "",
   "repository": {
     "url": "https://github.com/ttrace/vscode-chatgpt"
