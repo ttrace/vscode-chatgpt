@@ -2,6 +2,7 @@ import delay from 'delay';
 import fetch from 'isomorphic-fetch';
 import * as fs from 'node:fs';
 import * as os from 'node:os';
+import OpenAI from 'openai'; // 最新のChatGPTAPIをインポート
 import * as vscode from 'vscode';
 import { ChatGPTAPI as ChatGPTAPI3 } from '../chatgpt-4.7.2/index';
 import { ChatGPTAPI as ChatGPTAPI35 } from '../chatgpt-5.1.1/index';
@@ -16,13 +17,11 @@ export default class ChatGptViewProvider implements vscode.WebviewViewProvider {
 	public useGpt3?: boolean;
 	public chromiumPath?: string;
 	public profilePath?: string;
-	public model?: string;
-
+	public model: string;
+	public conversationHistory: Array<{ role: "user" | "system" | "assistant", content: string; name? : string}> = [];
+	private apiGpt?: OpenAI;
 	private apiGpt3?: ChatGPTAPI3;
 	private apiGpt35?: ChatGPTAPI35;
-	private conversationId?: string;
-	private messageId?: string;
-	private proxyServer?: string;
 	private loginMethod?: LoginMethod;
 	private authType?: AuthType;
 
@@ -88,9 +87,8 @@ export default class ChatGptViewProvider implements vscode.WebviewViewProvider {
 					this.logEvent(data.language === "markdown" ? "code-exported" : "code-opened");
 					break;
 				case 'clearConversation':
-					this.messageId = undefined;
-					this.conversationId = undefined;
-
+					this.conversationHistory = [];
+					this.conversationHistory.push({ role: 'system', content: this.systemContext });
 					this.logEvent("conversation-cleared");
 					break;
 				case 'clearBrowser':
@@ -153,13 +151,10 @@ export default class ChatGptViewProvider implements vscode.WebviewViewProvider {
 	public clearSession(): void {
 		this.stopGenerating();
 		this.apiGpt3 = undefined;
-		this.messageId = undefined;
-		this.conversationId = undefined;
 		this.logEvent("cleared-session");
 	}
 
 	public setProxyServer(): void {
-		this.proxyServer = vscode.workspace.getConfiguration("chatgpt").get("proxyServer");
 	}
 
 	public setMethod(): void {
@@ -224,6 +219,7 @@ export default class ChatGptViewProvider implements vscode.WebviewViewProvider {
 
 		const state = this.context.globalState;
 		const configuration = vscode.workspace.getConfiguration("chatgpt");
+		this.conversationHistory.push({ role: 'system', content: this.systemContext});
 
 		if (this.useGpt3) {
 			if ((this.isGpt35Model && !this.apiGpt35) || (!this.isGpt35Model && !this.apiGpt3) || modelChanged) {
@@ -261,33 +257,35 @@ export default class ChatGptViewProvider implements vscode.WebviewViewProvider {
 					return false;
 				}
 
-				if (this.isGpt35Model) {
-					this.apiGpt35 = new ChatGPTAPI35({
-						apiKey,
-						fetch: fetch,
-						apiBaseUrl: apiBaseUrl?.trim() || undefined,
-						organization,
-						completionParams: {
-							model: this.model,
-							max_tokens,
-							temperature,
-							top_p,
-						}
-					});
-				} else {
-					this.apiGpt3 = new ChatGPTAPI3({
-						apiKey,
-						fetch: fetch,
-						apiBaseUrl: apiBaseUrl?.trim() || undefined,
-						organization,
-						completionParams: {
-							model: this.model,
-							max_tokens,
-							temperature,
-							top_p,
-						}
-					});
-				}
+				this.apiGpt = new OpenAI({ apiKey });
+				// if (this.isGpt35Model) {
+				// 	this.apiGpt35 = new ChatGPTAPI35({
+				// 		apiKey,
+				// 		fetch: fetch,
+				// 		apiBaseUrl: apiBaseUrl?.trim() || undefined,
+				// 		organization,
+				// 		completionParams: {
+				// 			model: this.model,
+				// 			max_tokens,
+				// 			temperature,
+				// 			top_p,
+				// 		}
+				// 	});
+					
+				// } else {
+				// 	this.apiGpt3 = new ChatGPTAPI3({
+				// 		apiKey,
+				// 		fetch: fetch,
+				// 		apiBaseUrl: apiBaseUrl?.trim() || undefined,
+				// 		organization,
+				// 		completionParams: {
+				// 			model: this.model,
+				// 			max_tokens,
+				// 			temperature,
+				// 			top_p,
+				// 		}
+				// 	});
+				// }
 			}
 		}
 
@@ -310,13 +308,14 @@ export default class ChatGptViewProvider implements vscode.WebviewViewProvider {
 		}
 		return question + "\r\n";
 	}
-
+	// MARK: SendApiRequst 
 	public async sendApiRequest(prompt: string, options: { command: string, code?: string, previousAnswer?: string, language?: string; }) {
 		if (this.inProgress) {
 			// The AI is still thinking... Do not accept more questions.
 			return;
 		}
 
+		// this.sendApiRequest2(prompt, options);
 		this.questionCounter++;
 
 		this.logEvent("api-request-sent", { "chatgpt.command": options.command, "chatgpt.hasCode": String(!!options.code), "chatgpt.hasPreviousAnswer": String(!!options.previousAnswer) });
@@ -327,6 +326,7 @@ export default class ChatGptViewProvider implements vscode.WebviewViewProvider {
 
 		this.response = '';
 		let question = this.processQuestion(prompt, options.code, options.language);
+		this.conversationHistory.push({ role: 'user', content: question });
 		const responseInMarkdown = !this.isCodexModel;
 
 		// If the ChatGPT view is not in focus/visible; focus on it to render Q&A
@@ -344,28 +344,15 @@ export default class ChatGptViewProvider implements vscode.WebviewViewProvider {
 		this.sendMessage({ type: 'addQuestion', value: prompt, code: options.code, autoScroll: this.autoScroll });
 
 		try {
-			if (this.useGpt3) {
-				if (this.isGpt35Model && this.apiGpt35) {
-					const gpt3Response = await this.apiGpt35.sendMessage(question, {
-						systemMessage: this.systemContext,
-						messageId: this.conversationId,
-						parentMessageId: this.messageId,
-						abortSignal: this.abortController.signal,
-						onProgress: (partialResponse) => {
-							this.response = partialResponse.text;
-							this.sendMessage({ type: 'addResponse', value: this.response, id: this.currentMessageId, autoScroll: this.autoScroll, responseInMarkdown });
-						},
-					});
-					({ text: this.response, id: this.conversationId, parentMessageId: this.messageId } = gpt3Response);
-				} else if (!this.isGpt35Model && this.apiGpt3) {
-					({ text: this.response, conversationId: this.conversationId, parentMessageId: this.messageId } = await this.apiGpt3.sendMessage(question, {
-						promptPrefix: this.systemContext,
-						abortSignal: this.abortController.signal,
-						onProgress: (partialResponse) => {
-							this.response = partialResponse.text;
-							this.sendMessage({ type: 'addResponse', value: this.response, id: this.currentMessageId, autoScroll: this.autoScroll, responseInMarkdown });
-						},
-					}));
+			const gpt3Response = await this.apiGpt?.chat.completions.create({
+				model: this.model,
+				messages: this.conversationHistory,
+				stream: true, // ストリーム応答を有効にする場合
+			});
+			if (gpt3Response) {
+				for await (const message of gpt3Response) {
+					this.response += message.choices[0].delta.content || '';
+					this.sendMessage({ type: 'addResponse', value: this.response, done: true, id: this.currentMessageId, autoScroll: this.autoScroll, responseInMarkdown });
 				}
 			}
 

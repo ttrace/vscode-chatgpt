@@ -82,7 +82,7 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 
 		if (e.affectsConfiguration('chatgpt.gpt3.model')) {
-			provider.model = vscode.workspace.getConfiguration("chatgpt").get("gpt3.model");
+			provider.model = vscode.workspace.getConfiguration("chatgpt").get<string>("gpt3.model") || "gpt-3.5-turbo";
 		}
 
 		if (e.affectsConfiguration('chatgpt.gpt3.apiBaseUrl')

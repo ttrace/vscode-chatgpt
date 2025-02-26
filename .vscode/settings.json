@@ -33,4 +33,5 @@
     "[css]": {
         "editor.defaultFormatter": "vscode.css-language-features"
     },
+    "chatgpt.gpt3.model": "o3-mini",
 }
